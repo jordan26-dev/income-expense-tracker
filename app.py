@@ -5,6 +5,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import plotly.graph_objects as go
 
+import db
 
 
 # -------------- SETTINGS --------------
@@ -71,24 +72,23 @@ if selected == "Data Entry":
             incomes = {income: st.session_state[income] for income in incomes}
             expenses = {expense: st.session_state[expense] for expense in expenses}
             # TODO: Insert values into database
-            st.write(f"incomes: {incomes}")
-            st.write(f"expenses: {expenses}")
+            db.insert_period(period, incomes, expenses, comment)
             st.success("Data saved!")
         
 # --- PLOT PERIODS ---
 if selected == "Data Visualization":
     st.header("Data Visualization")
     with st.form("saved_periods"):
-        # TODO: Get periods from database
-        period = st.selectbox("Select Period", ["2022_March"])
+        # TODO: Get periods from database     
+        period = st.selectbox("Select Period", db.get_all_periods())
         submitted = st.form_submit_button("Plot Period")
         
         if submitted:
             # TODO: Get data from database
-            comment = "Some comment"
-            incomes = {"Salary": 1500, "Blog": 50, "Other Income": 10}
-            expenses = {"Rent": 600, "Utilities": 200, "Groceries": 300, 
-                        "Car": 100, "Other Expenses": 50, "Saving": 10}
+            period_data = db.get_period(period)
+            comment = period_data.get("comment")
+            expenses = period_data.get("expenses")
+            incomes = period_data.get("incomes")
             
             # Create metrics
             total_income = sum(incomes.values())
